@@ -590,17 +590,19 @@ public final class XECDHECryptography implements Destroyable {
 			this.recommended = recommended;
 			EllipticCurve curve = null;
 			int keySize = 0;
-			try {
-				KeyPairGenerator keyPairGenerator = EC_KEYPAIR_GENERATOR.currentWithCause();
-				ECGenParameterSpec genParams = new ECGenParameterSpec(name());
-				keyPairGenerator.initialize(genParams);
-				ECPublicKey apub = (ECPublicKey) keyPairGenerator.generateKeyPair().getPublic();
-				curve= apub.getParams().getCurve();
-				keySize = (curve.getField().getFieldSize() + Byte.SIZE - 1) / Byte.SIZE;
-				EC_CURVE_MAP_BY_CURVE.put(curve, this);
-			} catch (Throwable e) {
-				LOGGER.trace("Group [{}] is not supported by JRE! {}", name(), e.getMessage());
-				curve = null;
+			if (!CryptographyInitializeConfiguration.isInhibited(name())) {
+				try {
+					KeyPairGenerator keyPairGenerator = EC_KEYPAIR_GENERATOR.currentWithCause();
+					ECGenParameterSpec genParams = new ECGenParameterSpec(name());
+					keyPairGenerator.initialize(genParams);
+					ECPublicKey apub = (ECPublicKey) keyPairGenerator.generateKeyPair().getPublic();
+					curve = apub.getParams().getCurve();
+					keySize = (curve.getField().getFieldSize() + Byte.SIZE - 1) / Byte.SIZE;
+					EC_CURVE_MAP_BY_CURVE.put(curve, this);
+				} catch (Throwable e) {
+					LOGGER.trace("Group [{}] is not supported by JRE! {}", name(), e.getMessage());
+					curve = null;
+				}
 			}
 			this.keySizeInBytes = keySize;
 			this.usable = curve != null;
@@ -628,14 +630,16 @@ public final class XECDHECryptography implements Destroyable {
 			this.keySizeInBytes = keySizeInBytes;
 			this.recommended = recommended;
 			boolean usable = false;
-			try {
-				KeyPairGenerator keyPairGenerator = XDH_KEYPAIR_GENERATOR.currentWithCause();
-				ECGenParameterSpec params = new ECGenParameterSpec(name());
-				keyPairGenerator.initialize(params);
-				keyPairGenerator.generateKeyPair();
-				usable = true;
-			} catch (Throwable e) {
-				LOGGER.trace("Group [{}] is not supported by JRE! {}", name(), e.getMessage());
+			if (!CryptographyInitializeConfiguration.isInhibited(name())) {
+				try {
+					KeyPairGenerator keyPairGenerator = XDH_KEYPAIR_GENERATOR.currentWithCause();
+					ECGenParameterSpec params = new ECGenParameterSpec(name());
+					keyPairGenerator.initialize(params);
+					keyPairGenerator.generateKeyPair();
+					usable = true;
+				} catch (Throwable e) {
+					LOGGER.trace("Group [{}] is not supported by JRE! {}", name(), e.getMessage());
+				}
 			}
 			this.usable = usable;
 			EC_CURVE_MAP_BY_ID.put(code, this);

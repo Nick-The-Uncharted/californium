@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.californium.elements.util.Asn1DerDecoder;
+import org.eclipse.californium.scandium.dtls.cipher.CryptographyInitializeConfiguration;
 import org.eclipse.californium.scandium.dtls.cipher.ThreadLocalSignature;
 import org.eclipse.californium.scandium.util.ListUtils;
 
@@ -563,7 +564,8 @@ public final class SignatureAndHashAlgorithm {
 		this.hashAlgorithmCode = hashAlgorithm.getCode();
 		this.signatureAlgorithmCode = signatureAlgorithm.getCode();
 		this.jcaName = buildJcaName();
-		this.supported = jcaName != null && getThreadLocalSignature(jcaName).isSupported();
+		this.supported = jcaName != null && !CryptographyInitializeConfiguration.isInhibited(jcaName)
+				&& getThreadLocalSignature(jcaName).isSupported();
 	}
 
 	/**
