@@ -40,9 +40,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.elements.util.Asn1DerDecoder;
 import org.eclipse.californium.elements.util.Bytes;
+import org.eclipse.californium.elements.util.ClockUtil;
 import org.eclipse.californium.elements.util.StringUtil;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.slf4j.Logger;
@@ -157,6 +159,9 @@ public final class XECDHECryptography implements Destroyable {
 	private static final String XDH_KEY_AGREEMENT_ALGORITHM = "XDH";
 
 	private static final ThreadLocalKeyAgreement XDH_KEY_AGREEMENT = new ThreadLocalKeyAgreement(XDH_KEY_AGREEMENT_ALGORITHM);
+
+	private static Long timeFirst;
+	private static Long timeLast;
 
 	/**
 	 * Use java 11 XDH via reflection.
@@ -575,6 +580,11 @@ public final class XECDHECryptography implements Destroyable {
 		 *            {@code false}, otherwise.
 		 */
 		private SupportedGroup(int code, boolean recommended) {
+			timeLast = ClockUtil.nanoRealtime();
+			if (timeFirst == null) {
+				LOGGER.info("ECDHE groups init", new Throwable("trace"));
+				timeFirst = timeLast;
+			}
 			this.id = code;
 			this.algorithmName = EC_KEYPAIR_GENERATOR_ALGORITHM;
 			this.recommended = recommended;
@@ -608,6 +618,11 @@ public final class XECDHECryptography implements Destroyable {
 		 *            {@code false}, otherwise.
 		 */
 		private SupportedGroup(int code, int keySizeInBytes, String algorithmName, boolean recommended) {
+			timeLast = ClockUtil.nanoRealtime();
+			if (timeFirst == null) {
+				LOGGER.info("ECDHE groups init", new Throwable("trace"));
+				timeFirst = timeLast;
+			}
 			this.id = code;
 			this.algorithmName = algorithmName;
 			this.keySizeInBytes = keySizeInBytes;
@@ -765,6 +780,19 @@ public final class XECDHECryptography implements Destroyable {
 		public static List<SupportedGroup> getPreferredGroups() {
 			return Initialize.PREFERRED_GROUPS;
 		}
+
+		/**
+		 * Gets the startup time to initialize the curves.
+		 * 
+		 * @return startup time in nano-seconds. {@code null}, if not available.
+		 */
+		public static Long startupTime() {
+			if (timeFirst != null) {
+				return timeLast - timeFirst;
+			} else {
+				return null;
+			}
+		}
 	}
 
 	/**
@@ -801,6 +829,10 @@ public final class XECDHECryptography implements Destroyable {
 			}
 			USABLE_GROUPS = Collections.unmodifiableList(usableGroups);
 			PREFERRED_GROUPS = Collections.unmodifiableList(preferredGroups);
+			Long time = SupportedGroup.startupTime();
+			if (time != null) {
+				LOGGER.info("ECDHE groups startup {}ms", TimeUnit.NANOSECONDS.toMillis(time));
+			}
 		}
 	}
 }
