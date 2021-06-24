@@ -38,6 +38,7 @@ import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.dtls.cipher.CryptographyInitializeConfiguration;
 import org.eclipse.californium.scandium.dtls.cipher.XECDHECryptography;
 
 import java.security.Security;
@@ -164,6 +165,34 @@ public class MainActivity extends Activity {
      * and dtls connector.
      */
     private void initCoapEndpoint() {
+        if (true) {
+            CryptographyInitializeConfiguration.inhibit("sect163k1");
+            CryptographyInitializeConfiguration.inhibit("sect163r1");
+            CryptographyInitializeConfiguration.inhibit("sect163r2");
+            CryptographyInitializeConfiguration.inhibit("sect193r1");
+            CryptographyInitializeConfiguration.inhibit("sect193r2");
+            CryptographyInitializeConfiguration.inhibit("sect233k1");
+            CryptographyInitializeConfiguration.inhibit("sect233r1");
+            CryptographyInitializeConfiguration.inhibit("sect239k1");
+            CryptographyInitializeConfiguration.inhibit("sect283k1");
+            CryptographyInitializeConfiguration.inhibit("sect283r1");
+            CryptographyInitializeConfiguration.inhibit("sect409k1");
+            CryptographyInitializeConfiguration.inhibit("sect409r1");
+            CryptographyInitializeConfiguration.inhibit("sect571k1");
+            CryptographyInitializeConfiguration.inhibit("sect571r1");
+            CryptographyInitializeConfiguration.inhibit("secp160k1");
+            CryptographyInitializeConfiguration.inhibit("secp160r1");
+            CryptographyInitializeConfiguration.inhibit("secp160r2");
+            CryptographyInitializeConfiguration.inhibit("secp192k1");
+            CryptographyInitializeConfiguration.inhibit("secp192r1");
+            CryptographyInitializeConfiguration.inhibit("secp224k1");
+            CryptographyInitializeConfiguration.inhibit("secp224r1");
+            CryptographyInitializeConfiguration.inhibit("ffdhe2048");
+            CryptographyInitializeConfiguration.inhibit("ffdhe3072");
+            CryptographyInitializeConfiguration.inhibit("ffdhe4096");
+            CryptographyInitializeConfiguration.inhibit("ffdhe6144");
+            CryptographyInitializeConfiguration.inhibit("ffdhe8192");
+        }
         Security.removeProvider("BC");
         Security.insertProviderAt(new org.bouncycastle.jce.provider.BouncyCastleProvider(), 1);
         StringBuilder usableEcc = new StringBuilder();
